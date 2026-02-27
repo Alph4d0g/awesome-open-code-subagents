@@ -1,4 +1,5 @@
 import { tool } from "@opencode-ai/plugin";
+import yaml from "js-yaml";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +8,7 @@ const CATEGORIES_DIR = "categories";
 const CATEGORY_PATTERN = /^[0-9]+-[a-z0-9-]+$/;
 const AGENT_PATTERN = /^[a-z0-9-]+\.md$/;
 const SKILL_NAME_PATTERN = /^[a-z0-9-]+$/;
+const FRONTMATTER_PATTERN = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
 
 function formatResult(payload) {
   return JSON.stringify(payload, null, 2);
@@ -53,58 +55,90 @@ function resolveInside(baseDir, ...segments) {
   return target;
 }
 
-function parseFrontmatter(content) {
-  const parsed = {
+function splitFrontmatter(content) {
+  const match = content.match(FRONTMATTER_PATTERN);
+  if (!match) {
+    return {
+      rawFrontmatter: "",
+      body: content,
+    };
+  }
+
+  return {
+    rawFrontmatter: match[1],
+    body: content.slice(match[0].length),
+  };
+}
+
+function normalizeFrontmatter(data) {
+  const normalized = {
     name: "",
     description: "",
     tools: "inherit",
     model: "inherit",
   };
 
-  const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
-  if (!match) {
-    return parsed;
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return normalized;
   }
 
-  const lines = match[1].split("\n");
-  for (const line of lines) {
-    const separator = line.indexOf(":");
-    if (separator <= 0) {
-      continue;
-    }
-    const key = line.slice(0, separator).trim();
-    let value = line.slice(separator + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    if (key === "name") {
-      parsed.name = value;
-    } else if (key === "description") {
-      parsed.description = value;
-    } else if (key === "tools") {
-      parsed.tools = value || "inherit";
-    } else if (key === "model") {
-      parsed.model = value || "inherit";
-    }
+  if (data.name !== undefined && data.name !== null) {
+    normalized.name = String(data.name).trim();
+  }
+  if (data.description !== undefined && data.description !== null) {
+    normalized.description = String(data.description).trim();
   }
 
-  return parsed;
+  if (Array.isArray(data.tools)) {
+    const serializedTools = data.tools
+      .map((item) => String(item).trim())
+      .filter(Boolean)
+      .join(", ");
+    normalized.tools = serializedTools || "inherit";
+  } else if (data.tools !== undefined && data.tools !== null) {
+    const serializedTools = String(data.tools).trim();
+    normalized.tools = serializedTools || "inherit";
+  }
+
+  if (data.model !== undefined && data.model !== null) {
+    const serializedModel = String(data.model).trim();
+    normalized.model = serializedModel || "inherit";
+  }
+
+  return normalized;
+}
+
+function parseFrontmatter(content) {
+  const { rawFrontmatter } = splitFrontmatter(content);
+  if (!rawFrontmatter) {
+    return normalizeFrontmatter(null);
+  }
+
+  try {
+    const parsedYaml = yaml.load(rawFrontmatter);
+    return normalizeFrontmatter(parsedYaml);
+  } catch (error) {
+    const details = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid YAML frontmatter: ${details}`);
+  }
 }
 
 function extractBody(content) {
-  const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
-  if (!match) {
-    return content;
-  }
-  return content.slice(match[0].length);
+  const { body } = splitFrontmatter(content);
+  return body;
 }
 
 function convertAgentToSkill(content, category, agent) {
-  const frontmatter = parseFrontmatter(content);
+  let frontmatter;
+  try {
+    frontmatter = parseFrontmatter(content);
+  } catch (error) {
+    const details = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to parse frontmatter for categories/${category}/${agent}: ${details}`,
+    );
+  }
+
   const body = extractBody(content);
   const fallbackName = agent.replace(/\.md$/, "");
   const name = frontmatter.name || fallbackName;
@@ -114,12 +148,12 @@ function convertAgentToSkill(content, category, agent) {
   return [
     "---",
     `name: ${name}`,
-    `description: "${yamlEscape(description)}"`,
+    `description: \"${yamlEscape(description)}\"`,
     "metadata:",
-    `  source: "${yamlEscape(source)}"`,
-    `  category: "${yamlEscape(category)}"`,
-    `  tools: "${yamlEscape(frontmatter.tools || "inherit")}"`,
-    `  model: "${yamlEscape(frontmatter.model || "inherit")}"`,
+    `  source: \"${yamlEscape(source)}\"`,
+    `  category: \"${yamlEscape(category)}\"`,
+    `  tools: \"${yamlEscape(frontmatter.tools || "inherit")}\"`,
+    `  model: \"${yamlEscape(frontmatter.model || "inherit")}\"`,
     "---",
     "",
     body,

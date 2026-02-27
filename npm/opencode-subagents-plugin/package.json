@@ -1,6 +1,6 @@
 {
   "name": "@voltagent/opencode-subagents-plugin",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -8,6 +8,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@opencode-ai/plugin": "*"
+    "@opencode-ai/plugin": "*",
+    "js-yaml": "^4.1.1"
   }
 }
