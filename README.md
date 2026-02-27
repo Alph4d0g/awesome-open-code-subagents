@@ -33,9 +33,43 @@ This repository serves as a curated collection of specialized AI assistants for 
 
 ## Installation
 
-### OpenCode (Recommended for OpenCode users)
+### OpenCode Plugin (Recommended)
 
-Use the OpenCode installer to convert and install the same agent definitions as OpenCode skills.
+This repository ships an npm-style OpenCode plugin package at
+`npm/opencode-subagents-plugin`.
+Enable it in `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["@voltagent/opencode-subagents-plugin"]
+}
+```
+
+**Available tools:**
+
+| Tool | Description |
+|------|-------------|
+| `voltagent_list_categories` | List all agent categories |
+| `voltagent_list_agents` | List agents in a category |
+| `voltagent_fetch_agent` | Fetch full agent definition |
+| `voltagent_install_skill` | Install an agent as a skill |
+
+**Usage:**
+
+```
+> Use voltagent_list_categories to show available categories
+> Use voltagent_list_agents with category 02-language-specialists
+> Use voltagent_install_skill with category 02-language-specialists, agent python-pro.md, scope project
+```
+
+For pre-publish local testing, build a tarball from
+`npm/opencode-subagents-plugin` and use a file spec in `opencode.json`, for
+example `"@voltagent/opencode-subagents-plugin@file:/tmp/voltagent-opencode-subagents-plugin-<version>.tgz"`.
+
+### OpenCode Skills Installer (Optional)
+
+For static skill installation, use the interactive installer to convert agent definitions into OpenCode skills.
 
 ```bash
 git clone https://github.com/VoltAgent/awesome-claude-code-subagents.git
