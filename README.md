@@ -29,9 +29,33 @@
 
 # Awesome Claude Code Subagents 
 
-This repository serves as the definitive collection of Claude Code subagents, specialized AI assitants designed for specific development tasks. 
+This repository serves as a curated collection of specialized AI assistants for development tasks, with support for both Claude Code and OpenCode.
 
 ## Installation
+
+### OpenCode (Recommended for OpenCode users)
+
+Use the OpenCode installer to convert and install the same agent definitions as OpenCode skills.
+
+```bash
+git clone https://github.com/VoltAgent/awesome-claude-code-subagents.git
+cd awesome-claude-code-subagents
+./install-opencode-skills.sh
+```
+
+Standalone installer (no clone required):
+
+```bash
+curl -sO https://raw.githubusercontent.com/VoltAgent/awesome-claude-code-subagents/main/install-opencode-skills.sh
+chmod +x install-opencode-skills.sh
+./install-opencode-skills.sh
+```
+
+This installs skills into one of:
+- `~/.config/opencode/skills/` (global)
+- `.opencode/skills/` (project)
+
+Each installed skill is generated as `<skill-name>/SKILL.md` with OpenCode-compatible frontmatter.
 
 ### As Claude Code Plugin (Recommended)
 
@@ -283,7 +307,7 @@ Research, search, and analysis specialists.
 
 ## 🤖 Understanding Subagents
 
-Subagents are specialized AI assistants that enhance Claude Code's capabilities by providing task-specific expertise. They act as dedicated helpers that Claude Code can call upon when encountering particular types of work.
+Subagents/skills are specialized AI assistants that provide task-specific expertise. They act as dedicated helpers your coding agent can invoke for particular types of work.
 
 ### What Makes Subagents Special?
 
@@ -306,7 +330,15 @@ You can configure each subagent with specific tool access rights, enabling fine-
 - **Workflow Consistency**: Team-wide subagent sharing ensures uniform approaches to common tasks
 - **Security Control**: Tool access can be restricted based on subagent type and purpose
 
-### Getting Started with Subagents
+### Getting Started
+
+**OpenCode**
+
+1. Install skills with `./install-opencode-skills.sh`
+2. Restart OpenCode (or start a new session in the same project)
+3. Use skill names directly in your prompts/workflow
+
+**Claude Code**
 
 **1. Access the Subagent Manager**
 ```bash
@@ -326,19 +358,21 @@ Your subagent becomes immediately available. Claude Code will automatically enga
 > Have the code-reviewer subagent analyze my latest commits
 ```
 
-### Subagent Storage Locations
+### Storage Locations
 
 | Type | Path | Availability | Precedence |
 |------|------|--------------|------------|
+| OpenCode Project Skills | `.opencode/skills/` | Current project only | Higher |
+| OpenCode Global Skills | `~/.config/opencode/skills/` | All projects | Lower |
 | Project Subagents | `.claude/agents/` | Current project only | Higher |
 | Global Subagents | `~/.claude/agents/` | All projects | Lower |
 
-Note: When naming conflicts occur, project-specific subagents override global ones.
+Note: When naming conflicts occur, project-specific definitions override global ones.
 
 
-## 📖 Subagent Structure
+## 📖 Agent Structure
 
-Each subagent follows a standardized template:
+Claude source agents in this repo use:
 
 ```yaml
 ---
@@ -375,13 +409,23 @@ You can override any agent's model by editing the `model` field in its frontmatt
 
 ### Tool Assignment Philosophy
 
-Each subagent's `tools` field specifies Claude Code built-in tools, optimized for their role:
+Each source agent's `tools` field specifies Claude Code built-in tools, optimized for their role:
 - **Read-only agents** (reviewers, auditors): `Read, Grep, Glob` - analyze without modifying
 - **Research agents** (analysts, researchers): `Read, Grep, Glob, WebFetch, WebSearch` - gather information
 - **Code writers** (developers, engineers): `Read, Write, Edit, Bash, Glob, Grep` - create and execute
 - **Documentation agents** (writers, documenters): `Read, Write, Edit, Glob, Grep, WebFetch, WebSearch` - document with research
 
 Each agent has minimal necessary permissions. You can extend agents by adding MCP servers or external tools to the `tools` field.
+
+### OpenCode Skill Format
+
+The OpenCode installer converts each selected `*.md` agent to:
+
+- `<skill-name>/SKILL.md`
+- Frontmatter fields: `name`, `description`, and `metadata`
+- Original agent body preserved after frontmatter
+
+Compatibility metadata (such as original `tools` and `model`) is retained under `metadata`.
 
 ## 🧰 Tools
 
