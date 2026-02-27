@@ -35,11 +35,16 @@ This repository serves as a curated collection of specialized AI assistants for 
 
 ### OpenCode Plugin (Recommended)
 
-OpenCode loads plugins from `.opencode/plugins/` (project) or `~/.config/opencode/plugins/` (global). This repository provides a plugin that exposes custom tools for browsing and installing agents dynamically.
+This repository ships an npm-style OpenCode plugin package at
+`npm/opencode-subagents-plugin`.
+Enable it in `opencode.json`:
 
-**Plugin file:** `.opencode/plugins/voltagent-catalog.js`
-
-**Plugin runtime dependency:** `.opencode/package.json` (`@opencode-ai/plugin`)
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["@voltagent/opencode-subagents-plugin"]
+}
+```
 
 **Available tools:**
 
@@ -52,28 +57,15 @@ OpenCode loads plugins from `.opencode/plugins/` (project) or `~/.config/opencod
 
 **Usage:**
 
-```bash
-# In this repository, the plugin is auto-discovered from .opencode/plugins/
-
-# Copy plugin to another project
-mkdir -p /your-project/.opencode/plugins
-cp .opencode/plugins/voltagent-catalog.js /your-project/.opencode/plugins/
-cp .opencode/package.json /your-project/.opencode/package.json
-
-# Or install globally
-mkdir -p ~/.config/opencode/plugins
-cp .opencode/plugins/voltagent-catalog.js ~/.config/opencode/plugins/
-```
-
-If you copy the plugin into another project, OpenCode will install `.opencode/package.json`
-dependencies via Bun at startup.
-
-Then in OpenCode:
 ```
 > Use voltagent_list_categories to show available categories
 > Use voltagent_list_agents with category 02-language-specialists
 > Use voltagent_install_skill with category 02-language-specialists, agent python-pro.md, scope project
 ```
+
+For pre-publish local testing, build a tarball from
+`npm/opencode-subagents-plugin` and use a file spec in `opencode.json`, for
+example `"@voltagent/opencode-subagents-plugin@file:/tmp/voltagent-opencode-subagents-plugin-<version>.tgz"`.
 
 ### OpenCode Skills Installer (Optional)
 

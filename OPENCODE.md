@@ -1,18 +1,21 @@
 # OpenCode Compatibility
 
-This repository can be used in OpenCode via **plugin** (dynamic tool-based access) or **skill installer** (static file-based installation).
+This repository can be used in OpenCode via **npm plugin** (recommended) or **skill installer** (static file-based installation).
 
 ## OpenCode Plugin (Recommended)
 
-OpenCode loads plugins from:
-- **Project scope:** `.opencode/plugins/`
-- **Global scope:** `~/.config/opencode/plugins/`
+The plugin package is located at `npm/opencode-subagents-plugin`.
 
-### Plugin File
+### Configuration
 
-This repository provides `.opencode/plugins/voltagent-catalog.js` which exposes custom tools for browsing and installing agents dynamically.
+Add to your `opencode.json`:
 
-Plugin dependency manifest: `.opencode/package.json` (`@opencode-ai/plugin`).
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["@voltagent/opencode-subagents-plugin"]
+}
+```
 
 ### Available Tools
 
@@ -23,25 +26,11 @@ Plugin dependency manifest: `.opencode/package.json` (`@opencode-ai/plugin`).
 | `voltagent_fetch_agent` | Fetch full agent definition | `Use voltagent_fetch_agent with category 02-language-specialists and agent python-pro.md` |
 | `voltagent_install_skill` | Install an agent as a skill | `Use voltagent_install_skill with category 02-language-specialists, agent python-pro.md, scope project` |
 
-### Plugin Installation
+For pre-publish local testing, pack `npm/opencode-subagents-plugin` and use a
+file spec plugin entry (for example
+`"@voltagent/opencode-subagents-plugin@file:/tmp/voltagent-opencode-subagents-plugin-<version>.tgz"`).
 
-**Project install:**
-```bash
-mkdir -p /your/project/.opencode/plugins
-cp /path/to/repo/.opencode/plugins/voltagent-catalog.js /your/project/.opencode/plugins/
-cp /path/to/repo/.opencode/package.json /your/project/.opencode/package.json
-```
-
-**Global install:**
-```bash
-mkdir -p ~/.config/opencode/plugins
-cp /path/to/repo/.opencode/plugins/voltagent-catalog.js ~/.config/opencode/plugins/
-```
-
-Restart OpenCode or start a new session to load the plugin.
-
-If copied to another project, OpenCode installs `.opencode/package.json` dependencies
-via Bun at startup.
+Restart OpenCode to load the plugin.
 
 ## Skill Installer (Optional/Legacy)
 

@@ -8,6 +8,10 @@ const CATEGORY_PATTERN = /^[0-9]+-[a-z0-9-]+$/;
 const AGENT_PATTERN = /^[a-z0-9-]+\.md$/;
 const SKILL_NAME_PATTERN = /^[a-z0-9-]+$/;
 
+function formatResult(payload) {
+  return JSON.stringify(payload, null, 2);
+}
+
 function yamlEscape(value) {
   if (!value) {
     return "";
@@ -110,12 +114,12 @@ function convertAgentToSkill(content, category, agent) {
   return [
     "---",
     `name: ${name}`,
-    `description: \"${yamlEscape(description)}\"`,
+    `description: "${yamlEscape(description)}"`,
     "metadata:",
-    `  source: \"${yamlEscape(source)}\"`,
-    `  category: \"${yamlEscape(category)}\"`,
-    `  tools: \"${yamlEscape(frontmatter.tools || "inherit")}\"`,
-    `  model: \"${yamlEscape(frontmatter.model || "inherit")}\"`,
+    `  source: "${yamlEscape(source)}"`,
+    `  category: "${yamlEscape(category)}"`,
+    `  tools: "${yamlEscape(frontmatter.tools || "inherit")}"`,
+    `  model: "${yamlEscape(frontmatter.model || "inherit")}"`,
     "---",
     "",
     body,
@@ -214,10 +218,10 @@ export const VoltAgentCatalog = async ({ directory, client }) => {
         args: {},
         async execute() {
           const categories = await listCategories(repoRoot);
-          return {
+          return formatResult({
             count: categories.length,
             categories,
-          };
+          });
         },
       }),
 
@@ -229,11 +233,11 @@ export const VoltAgentCatalog = async ({ directory, client }) => {
         async execute(args) {
           const category = String(args.category || "").trim();
           const agents = await listAgents(repoRoot, category);
-          return {
+          return formatResult({
             category,
             count: agents.length,
             agents,
-          };
+          });
         },
       }),
 
@@ -248,7 +252,7 @@ export const VoltAgentCatalog = async ({ directory, client }) => {
           const agent = parseAgentArg(String(args.agent || "").trim());
           const data = await readAgent(repoRoot, category, agent);
 
-          return {
+          return formatResult({
             category,
             agent,
             source: data.source,
@@ -259,7 +263,7 @@ export const VoltAgentCatalog = async ({ directory, client }) => {
               model: data.frontmatter.model || "inherit",
             },
             body: data.body,
-          };
+          });
         },
       }),
 
@@ -294,14 +298,14 @@ export const VoltAgentCatalog = async ({ directory, client }) => {
           const skillPath = path.join(skillDir, "SKILL.md");
           await fs.writeFile(skillPath, skillMarkdown, "utf-8");
 
-          return {
+          return formatResult({
             success: true,
             name: data.agentName,
             category,
             source: data.source,
             scope,
             installedTo: skillPath,
-          };
+          });
         },
       }),
     },
