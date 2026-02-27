@@ -33,9 +33,51 @@ This repository serves as a curated collection of specialized AI assistants for 
 
 ## Installation
 
-### OpenCode (Recommended for OpenCode users)
+### OpenCode Plugin (Recommended)
 
-Use the OpenCode installer to convert and install the same agent definitions as OpenCode skills.
+OpenCode loads plugins from `.opencode/plugins/` (project) or `~/.config/opencode/plugins/` (global). This repository provides a plugin that exposes custom tools for browsing and installing agents dynamically.
+
+**Plugin file:** `.opencode/plugins/voltagent-catalog.js`
+
+**Plugin runtime dependency:** `.opencode/package.json` (`@opencode-ai/plugin`)
+
+**Available tools:**
+
+| Tool | Description |
+|------|-------------|
+| `voltagent_list_categories` | List all agent categories |
+| `voltagent_list_agents` | List agents in a category |
+| `voltagent_fetch_agent` | Fetch full agent definition |
+| `voltagent_install_skill` | Install an agent as a skill |
+
+**Usage:**
+
+```bash
+# In this repository, the plugin is auto-discovered from .opencode/plugins/
+
+# Copy plugin to another project
+mkdir -p /your-project/.opencode/plugins
+cp .opencode/plugins/voltagent-catalog.js /your-project/.opencode/plugins/
+cp .opencode/package.json /your-project/.opencode/package.json
+
+# Or install globally
+mkdir -p ~/.config/opencode/plugins
+cp .opencode/plugins/voltagent-catalog.js ~/.config/opencode/plugins/
+```
+
+If you copy the plugin into another project, OpenCode will install `.opencode/package.json`
+dependencies via Bun at startup.
+
+Then in OpenCode:
+```
+> Use voltagent_list_categories to show available categories
+> Use voltagent_list_agents with category 02-language-specialists
+> Use voltagent_install_skill with category 02-language-specialists, agent python-pro.md, scope project
+```
+
+### OpenCode Skills Installer (Optional)
+
+For static skill installation, use the interactive installer to convert agent definitions into OpenCode skills.
 
 ```bash
 git clone https://github.com/VoltAgent/awesome-claude-code-subagents.git
